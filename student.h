@@ -6,7 +6,7 @@
 typedef struct {
     char surname[STR_SIZE];
     char initials[STR_SIZE];
-    char gender;
+    char gender[STR_SIZE];
     char group[STR_SIZE];
     int  dm, ma, la, cs, hi;
 } Student;

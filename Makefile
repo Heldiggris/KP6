@@ -1,9 +1,9 @@
 CC = gcc
 CFLAGS = -g -std=c99 -w -pipe -O3
 
-all: print execute
+all: execute
 
-print:    io.o print.o
+print:    io.o
 	$(CC) $^ -o $@
 
 execute:  io.o execute.o
@@ -13,5 +13,5 @@ clean:
 	rm -f *.o
 
 cleanall:
-	rm -f print execute *.o
+	rm -f execute *.o
 
