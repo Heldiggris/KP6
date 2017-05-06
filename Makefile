@@ -12,6 +12,9 @@ execute:  io.o execute.o
 clean:
 	rm -f *.o
 
+generate: generate.o io.o
+	$(CC) $^ -o $@
+
 cleanall:
 	rm -f execute *.o
 

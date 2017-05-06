@@ -13,7 +13,11 @@ typedef struct {
 
 double avg_mark(Student *s)
 {
-    return (s->dm + s->ma + s->la + s->cs + s->hi) / 5.0;
+    double mdl = 0.0;
+    for (int i = 0; i < s->marks_qty; ++i) {
+                mdl += s->marks->mark[i];
+            }
+    return mdl / s->marks_qty;
 }
 
 int group_get_index(char *group, int qty, StudentStatistics *students)
@@ -28,12 +32,12 @@ int group_get_index(char *group, int qty, StudentStatistics *students)
 
 void result(FILE *in)
 {
+    printf("00\n");
     StudentStatistics students[200] = { { 0.0, 0, ' ' } };
     int students_qty = 0;
-
     Student student;
     int j_old = -1;
-    while (student_read_txt(&student, in)) {
+    while (student_read_bin(&student, in)) {
         if (strcmp(student.gender, "F") == 0) {
             int j = group_get_index(student.group, students_qty, students);
             if (j_old != j) {
@@ -66,34 +70,34 @@ void result(FILE *in)
 
 void remove_el(char *file, char *surname, char *initials)
 {
-    FILE *in = fopen(file, "r");
+    FILE *in = fopen(file, "rb");
         if (!in) {
             printf("I/O Error: can't open file.\n");
             exit(1);
         }
-    FILE *tmp = fopen("tmp", "w");
+    FILE *tmp = fopen("tmp", "wb");
     Student st;
-    while (student_read_txt(&st, in)) {
+    while (student_read_bin(&st, in)) {
         if (strcmp(st.surname, surname) != 0) {
-            student_write_txt(&st, tmp);
+            student_write_bin(&st, tmp);
         } else if (strcmp(st.initials, initials) != 0) {
-            student_write_txt(&st, tmp);
+            student_write_bin(&st, tmp);
         }
     }
     fclose(in);
     fclose(tmp);
 
-    in = fopen(file, "w");
+    in = fopen(file, "wb");
         if (!in) {
             printf("I/O Error: can't open file.\n");
             exit(1);
         }
-    tmp = fopen("tmp", "r");
-    while (student_read_txt(&st, tmp)) {
+    tmp = fopen("tmp", "rb");
+    while (student_read_bin(&st, tmp)) {
         if (strcmp(st.surname, surname) != 0) {
-            student_write_txt(&st, in);
+            student_write_bin(&st, in);
         } else if (strcmp(st.initials, initials) != 0) {
-            student_write_txt(&st, in);
+            student_write_bin(&st, in);
         }
     }
     fclose(in);
@@ -109,9 +113,14 @@ void info(char *file, char *surname, char *initials)
             exit(1);
         }
     Student st;
-    while (student_read_txt(&st, in)) {
+    while (student_read_bin(&st, in)) {
         if (strcmp(st.surname, surname) == 0) {
-            printf("Имя: %s %s\nПол: %s\nГруппа: %s\nОценки: дм - %d, ма - %d, ла - %d, инф - %d, ист - %d\n", st.surname, st.initials, st.gender, st.group, st.dm, st.ma, st.la, st.cs, st.hi);
+            printf("Имя: %s %s\nПол: %s\nГруппа: %s\nОценки: ", st.surname, st.initials, st.gender, st.group);
+            for (int i = 0; i < st.marks_qty; ++i) {
+                printf("%s ", &st.marks->ob[i]);
+                printf("%lf ", &st.marks->mark[i]);
+            }
+            printf("\n");
         }
     }
     fclose(in);
@@ -126,51 +135,56 @@ int main(int argc, char *argv[])
     }
 
     while (1) {
-        scanf("%s", what_do);
-        if (strcmp(what_do, "result") == 0) {
-            FILE *in = fopen(argv[1], "r");
+        fscanf(stdin, "%s", what_do);
+        if (!strcmp(what_do, "result")) {
+            FILE *in = fopen(argv[1], "rb");
             if (!in) {
                 printf("I/O Error: can't open file.\n");
                 exit(1);
             }
             result(in);
             fclose(in);
-        } else if (strcmp(what_do, "add") == 0) {
-            FILE *add_file = fopen(argv[1], "a");
+        } else if (!strcmp(what_do, "add")) {
+            FILE *add_file = fopen(argv[1], "ab");
             if (!add_file) {
             printf("I/O Error: can't open file.\n");
                 exit(1);
             }
             Student student;
-            scanf("%s", &student.surname);
-            scanf("%s", &student.initials);
-            scanf("%s", &student.gender);
-            scanf("%s", &student.group);
-            scanf("%d", &student.dm);
-            scanf("%d", &student.ma);
-            scanf("%d", &student.la);
-            scanf("%d", &student.cs);
-            scanf("%d", &student.hi);
-            student_write_txt(&student, add_file);
+            fscanf(stdin, "%s", &student.surname);
+            fscanf(stdin, "%s", &student.initials);
+            fscanf(stdin, "%s", &student.gender);
+            fscanf(stdin, "%s", &student.group);
+            fscanf(stdin, "%d", &student.marks_qty);
+            for (int i = 0; i < student.marks_qty; ++i) {
+                fscanf(stdin, "%s", &student.marks->ob[i]);
+                fscanf(stdin, "%d", &student.marks->mark[i]);
+            }
+            student_write_bin(&student, add_file);
             fclose(add_file);
-        } else if (strcmp(what_do, "remove") == 0) {
+        } else if (!strcmp(what_do, "remove")) {
             char surname[STR_SIZE];
             char initials[3];
-            scanf("%s", &surname);
-            scanf("%s", &initials);
+            fscanf(stdin, "%s", &surname);
+            fscanf(stdin, "%s", &initials);
             remove_el(argv[1], surname, initials);
-        } else if (strcmp(what_do, "close") == 0 || strcmp(what_do, "exit") == 0) {
+        } else if (!strcmp(what_do, "close") || !strcmp(what_do, "exit")) {
             break;
-        } else if (strcmp(what_do, "info") == 0) {
+        } else if (!strcmp(what_do, "info")) {
             char surname[STR_SIZE];
             char initials[3];
-            scanf("%s", &surname);
-            scanf("%s", &initials);
+            fscanf(stdin, "%s", &surname);
+            fscanf(stdin, "%s", &initials);
             info(argv[1], surname, initials);
-        }
-        else {
+        } else if (!strcmp(what_do, "help")) {
+            printf("\tresult - вывод результата\n");
+            printf("\tadd    surname initials gender group dm ma la cs hi - добавить студента\n");
+            printf("\tremove    surname initials - удалить студента\n");
+            printf("\tinfo    surname initials - информация о студенте\n");
+            printf("\texit - завершение программы\n");
+        } else {
             printf("Error: Invalid query\n");
-            exit(2);
+            // exit(2);
         }
     }
 
