@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc != 4) {
+    if (argc != 3) {
         printf("Usage:\n\t./generate FILE_FROM FILE_TO\n");
         exit(0);
     }
@@ -22,16 +22,9 @@ int main(int argc, char *argv[])
 
     Student s;
 
-    if (!strcmp(argv[3], "txt")) {
-        while (student_read_bin(&s, in)) {
-            student_write_txt(&s, out);
-        }
-    } else {
-        while (student_read_txt(&s, in)) {
-            student_write_bin(&s, out);
-        }
+    while (student_read_txt(&s, in)) {
+        student_write_bin(&s, out);
     }
-
     fclose(in);
     fclose(out);
     return 0;

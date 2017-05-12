@@ -6,7 +6,7 @@ all: execute
 print:    io.o
 	$(CC) $^ -o $@
 
-execute:  io.o execute.o
+execute:  io.o execute.o student.o
 	$(CC) $^ -o $@
 
 clean:
@@ -16,5 +16,5 @@ generate: generate.o io.o
 	$(CC) $^ -o $@
 
 cleanall:
-	rm -f execute *.o
+	rm -f execute generate *.o
 
