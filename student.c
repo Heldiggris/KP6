@@ -4,8 +4,18 @@
 
 #include "student.h"
 
+
+int hash_table(char *group) {
+    int a = 0;
+    for(int i = 0; group[i] != '\0'; ++i) {
+        a += (int)group[i];
+    }
+    return ("%d\n", a % 200);
+}
+
 int group_get_index(char *group, int qty, StudentStatistics *students)
 {
+    hash_table(group);
     for (int i = 0; i < qty; i++) {
         if (strcmp(students[i].group, group) == 0) {
             return i;
@@ -30,34 +40,34 @@ void group_max_avg_mark(FILE *in, char gend[STR_SIZE])
     int students_qty = 0;
     Student student;
     int j_old = -1;
+    int index_group[200];
     while (student_read_bin(&student, in)) {
         if (!strcmp(student.gender, gend)) {
-            int j = group_get_index(student.group, students_qty, students);
-            if (j_old != j) {
-                students_qty += 1;
+            int j = hash_table(student.group);
+            if(!strcmp(students[j].group, "" )) {
+                strcpy(students[j].group, student.group);
+                index_group[students_qty++] = j;
             }
-            j_old = j;
             students[j].sum_mark += avg_mark(&student);
-            students[j].capacity += 1;
-            strcpy(students[j].group, student.group);
+            students[j].capacity++;
         }
     }
-    char group_max_mark[200][STR_SIZE];
+    int group_max_mark[200];
     int group_max_mark_qty = 0;
     double max_mark = 0;
     for (int i = 0; i < students_qty; ++i) {
-        if (students[i].sum_mark / students[i].capacity > max_mark) {
-            max_mark = students[i].sum_mark / students[i].capacity;
-            strcpy(group_max_mark[group_max_mark_qty], students[i].group);
+        if (students[index_group[i]].sum_mark / students[index_group[i]].capacity > max_mark) {
+            max_mark = students[index_group[i]].sum_mark / students[index_group[i]].capacity;
+            group_max_mark[group_max_mark_qty] = index_group[i];
             group_max_mark_qty = 0;
-        } else if (students[i].sum_mark / students[i].capacity == max_mark) {
+        } else if (students[index_group[i]].sum_mark / students[index_group[i]].capacity == max_mark) {
             group_max_mark_qty += 1;
-            strcpy(group_max_mark[group_max_mark_qty], students[i].group);
+            group_max_mark[group_max_mark_qty] = index_group[i];
         }
     }
 
     for (int i = 0; i <= group_max_mark_qty; ++i) {
-        printf("Группа: %s. Балл: %.2lf\n", group_max_mark[i], max_mark);
+        printf("Группа: %s. Балл: %.2lf\n", students[group_max_mark[i]].group, max_mark);
     }
 }
 

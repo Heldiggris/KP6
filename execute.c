@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
             printf("\tinfo    [фамилия] [инициалы] - информация о студенте\n");
             printf("\texit - завершение программы\n");
         } else {
-            return 0;
+            // return 0;
         }
     }
 
