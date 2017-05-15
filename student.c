@@ -5,23 +5,61 @@
 #include "student.h"
 
 
-int hash_table(char *group) {
+int hash(char *group) {
     int a = 0;
     for(int i = 0; group[i] != '\0'; ++i) {
         a += (int)group[i];
     }
-    return ("%d\n", a % 200);
+    return a % MAX_GROUP;
 }
 
-int group_get_index(char *group, int qty, StudentStatistics *students)
+int hash_find_group(char *group, StudentStatistics *students)
 {
-    hash_table(group);
-    for (int i = 0; i < qty; i++) {
-        if (strcmp(students[i].group, group) == 0) {
-            return i;
+    int j = hash(group);
+    if (!strcmp(students[j].group, group )) {
+        return j;
+    } else {
+        for (int i = j; i < MAX_GROUP; i++) {
+            if (!strcmp(students[i].group, group)) {
+                return i;
+            } else if(!strcmp(students[i].group, "")) {
+                return -1;
+            }
+        }
+        for (int i = 0; i < j; i++) {
+            if (!strcmp(students[i].group, group)) {
+                return i;
+            } else if(!strcmp(students[i].group, "")) {
+                return -1;
+            }
         }
     }
-    return qty;
+    return -1;
+}
+
+int hash_add_group(char *group, StudentStatistics *students) {
+    int j = hash(group);
+    if (!strcmp(students[j].group, group )) {
+        return j;
+    } else {
+        for (int i = j; i < MAX_GROUP; i++) {
+            if (!strcmp(students[i].group, group)) {
+                return i;
+            } else if(!strcmp(students[i].group, "")) {
+                 strcpy(students[j].group, group);
+                 return j;
+            }
+        }
+        for (int i = 0; i < j; i++) {
+            if (!strcmp(students[i].group, group)) {
+                return i;
+            } else if(!strcmp(students[i].group, "")) {
+                 strcpy(students[j].group, group);
+                 return j;
+            }
+        }
+    }
+    return -1;
 }
 
 double avg_mark(Student *s)
@@ -36,23 +74,32 @@ double avg_mark(Student *s)
 
 void group_max_avg_mark(FILE *in, char gend[STR_SIZE])
 {
-    StudentStatistics students[200] = { { 0.0, 0, ' ' } };
+    StudentStatistics students[MAX_GROUP] = { { 0.0, 0, ' ' } };
     int students_qty = 0;
     Student student;
-    int j_old = -1;
-    int index_group[200];
+    int index_group[MAX_GROUP];
     while (student_read_bin(&student, in)) {
         if (!strcmp(student.gender, gend)) {
-            int j = hash_table(student.group);
-            if(!strcmp(students[j].group, "" )) {
-                strcpy(students[j].group, student.group);
+            int j;
+            if (j = hash_find_group(student.group, students) == -1) {
+                j = hash_add_group(student.group, students);
                 index_group[students_qty++] = j;
             }
             students[j].sum_mark += avg_mark(&student);
             students[j].capacity++;
+            // int j = hash(student.group);
+            // if (!strcmp(students[j].group, "" )) {
+            //     strcpy(students[j].group, student.group);
+                
+            // } else if (strcmp(students[j].group, student.group )) {
+            //     j = hash_create(student.group, students);
+            //     strcpy(students[j].group, student.group);
+            //     index_group[students_qty++] = j;
+            // }
+            
         }
     }
-    int group_max_mark[200];
+    int group_max_mark[MAX_GROUP];
     int group_max_mark_qty = 0;
     double max_mark = 0;
     for (int i = 0; i < students_qty; ++i) {

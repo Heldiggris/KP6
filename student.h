@@ -3,6 +3,8 @@
 #define _STUDENT_H_
 
 #define STR_SIZE 24
+#define MAX_GROUP 200
+
 
 typedef int32_t Item;
 
@@ -27,7 +29,11 @@ typedef struct {
 } StudentStatistics;
 
 
-int group_get_index(char *group, int qty, StudentStatistics *students);
+int hash(char *group);
+
+int hash_find_group(char *group, StudentStatistics *students);
+
+int hash_add_group(char *group, StudentStatistics *students);
 
 double avg_mark(Student *s);
 

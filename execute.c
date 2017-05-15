@@ -96,7 +96,6 @@ int main(int argc, char *argv[])
             }
             fscanf(stdin, "%s", &initials);
             if (feof(stdin)) {
-                return 0;
             }
             info_student(argv[1], surname, initials);
         } else if (!strcmp(what_do, "help")) {
