@@ -37,10 +37,12 @@ int hash_add_group(char *group, StudentStatistics *students);
 
 double avg_mark(Student *s);
 
-void group_max_avg_mark(FILE *in, char gend[STR_SIZE]);
+void group_max_avg_mark(FILE *in, StudentStatistics *students, int *group_max_mark, double *max_mark, int *group_max_mark_qty, int *students_qty, int *index_group);
 
-void remove_el(char *file, char *surname, char *initials);
+void remove_student(char *file, char *surname, char *initials, StudentStatistics *students, int *group_max_mark, double *max_mark, int *group_max_mark_qty, int *students_qty, int *index_group);
 
-void info_student(char *file, char *surname, char *initials);
+void add_student(FILE *add_file, StudentStatistics *students, int *group_max_mark, double *max_mark, int *group_max_mark_qty, int *students_qty, int *index_group);
+
+void info_student(FILE *in, char *surname, char *initials);
 
 #endif
