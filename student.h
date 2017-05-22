@@ -3,10 +3,10 @@
 #define _STUDENT_H_
 
 #define STR_SIZE 24
-#define MAX_GROUP 200
-
+#define MAX_GROUP 524288
 
 typedef int32_t Item;
+
 
 typedef struct {
     char ob[20][STR_SIZE];
@@ -28,20 +28,25 @@ typedef struct {
     char group[STR_SIZE];
 } StudentStatistics;
 
+typedef struct _list{
+    StudentStatistics students;
+    struct _list *next;
+} List;
 
-int hash(char *group);
 
-int hash_find_group(char *group, StudentStatistics *students);
 
-int hash_add_group(char *group, StudentStatistics *students);
+// int hash(char *group);
 
-double avg_mark(Student *s);
+// int hash_find_group(char *group, StudentStatistics *students);
 
-void group_max_avg_mark(FILE *in, StudentStatistics *students, int *group_max_mark, double *max_mark, int *group_max_mark_qty, int *students_qty, int *index_group);
+// int hash_add_group(char *group, StudentStatistics *students);
 
-void remove_student(char *file, char *surname, char *initials, StudentStatistics *students, int *group_max_mark, double *max_mark, int *group_max_mark_qty, int *students_qty, int *index_group);
+// double avg_mark(Student *s);
 
-void add_student(FILE *add_file, StudentStatistics *students, int *group_max_mark, double *max_mark, int *group_max_mark_qty, int *students_qty, int *index_group);
+// void group_max_avg_mark(FILE *in, List **l, char *group_max_mark, double *max_mark, int *index_qty, int *index_group);
+// void remove_student(char *file, char *surname, char *initials, StudentStatistics *students, int *group_max_mark, double *max_mark, int *group_max_mark_qty, int *students_qty, int *index_group);
+
+// void add_student(FILE *add_file, StudentStatistics *students, int *group_max_mark, double *max_mark, int *group_max_mark_qty, int *students_qty, int *index_group);
 
 void info_student(FILE *in, char *surname, char *initials);
 

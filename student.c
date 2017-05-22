@@ -7,59 +7,72 @@
 
 int hash(char *group) {
     int a = 0;
+    int pos = 1;
     for(int i = 0; group[i] != '\0'; ++i) {
-        a += (int)group[i];
+        a += (int)group[i] * 1024 * pos++;
     }
+    if (a < 0)
+        a *= -1;
     return a % MAX_GROUP;
 }
 
-int hash_find_group(char *group, StudentStatistics *students)
+int hash_find_group(char *group, List **l)
 {
     int j = hash(group);
-    if (!strcmp(students[j].group, group )) {
-        return j;
-    } else {
-        for (int i = j; i < MAX_GROUP; i++) {
-            if (!strcmp(students[i].group, group)) {
-                return i;
-            } else if(!strcmp(students[i].group, "")) {
-                return -1;
-            }
+    int pos = 0;
+    List *l1 = l[j];
+    while (l1) {
+        if (!strcmp(l1->students.group, group)) {
+            return pos;
         }
-        for (int i = 0; i < j; i++) {
-            if (!strcmp(students[i].group, group)) {
-                return i;
-            } else if(!strcmp(students[i].group, "")) {
-                return -1;
-            }
-        }
+        pos++;
+        l1 = l1->next;
     }
     return -1;
 }
 
-int hash_add_group(char *group, StudentStatistics *students) {
+List *list_create()
+{
+    List *l = (List *)malloc(sizeof(List));
+    // l->students = { 0.0, 0, ' ' };
+    l->students.sum_mark = 0.0;
+    l->students.capacity = 0;
+    strcpy(l->students.group ," "); 
+    l->next = NULL;
+    return l;
+}
+
+void list_destroy(List *l)
+{
+    // if (l->next) {
+    //     printf("1\n");
+    //     list_destroy(l->next);
+    // }
+    free(l);
+}
+
+
+
+int hash_add_group(char *group, List **l) {
     int j = hash(group);
-    if (!strcmp(students[j].group, group )) {
-        return j;
-    } else {
-        for (int i = j; i < MAX_GROUP; i++) {
-            if (!strcmp(students[i].group, group)) {
-                return i;
-            } else if(!strcmp(students[i].group, "")) {
-                 strcpy(students[j].group, group);
-                 return j;
-            }
-        }
-        for (int i = 0; i < j; i++) {
-            if (!strcmp(students[i].group, group)) {
-                return i;
-            } else if(!strcmp(students[i].group, "")) {
-                 strcpy(students[j].group, group);
-                 return j;
-            }
-        }
+    int pos = 0;
+    List *l1 = l[j];
+    if (!l1) {
+        l[j] = list_create();
+        strcpy(l[j]->students.group, group);
+        return pos;
     }
-    return -1;
+    while (l1->next) {
+        if (!strcmp(l1->students.group, group )) {
+            return pos;
+        }
+        l1 = l1->next;
+        pos++;
+    }
+    l1->next = list_create();
+    strcpy(l1->next->students.group, group);
+    // l[j] = l1;
+    return pos;
 }
 
 double avg_mark(Student *s)
@@ -71,33 +84,44 @@ double avg_mark(Student *s)
     return mdl / s->marks_qty;
 }
 
-void group_max_avg_mark(FILE *in, StudentStatistics *students, int *group_max_mark, double *max_mark, int *group_max_mark_qty, int *students_qty, int *index_group)
+void group_max_avg_mark(FILE *in, List **l, char *group_max_mark, double *max_mark, int *index_qty, int *index_group)
 {
     Student student;
+    int add_pos = 0;
+    long long int aaa = 0;
     while (student_read_bin(&student, in)) {
         if (!strcmp(student.gender, "F")) {
-            int j;
-            if (j = hash_find_group(student.group, students) == -1) {
-                j = hash_add_group(student.group, students);
-                index_group[(*students_qty)++] = j;
+            int j = hash(student.group);
+            if ((add_pos = hash_find_group(student.group, l)) == -1) {
+                List *l2 = l[j];
+                add_pos = hash_add_group(student.group, l);
+                if (add_pos == 0) {
+                    index_group[(*index_qty)++] = j;
+                }
             }
-            students[j].sum_mark += avg_mark(&student);
-            students[j].capacity++;
+            List *l2 = l[j];
+            for (int i = 0; i < add_pos; ++i) {
+                l[j] = l[j]->next;
+            }
+            l[j]->students.sum_mark += avg_mark(&student);
+            l[j]->students.capacity++;
+            l[j] = l2;
         }
     }
-    for (int i = 0; i < (*students_qty); ++i) {
-        if (students[index_group[i]].sum_mark / students[index_group[i]].capacity > *max_mark) {
-            *max_mark = students[index_group[i]].sum_mark / students[index_group[i]].capacity;
-            group_max_mark[*group_max_mark_qty] = index_group[i];
-            *group_max_mark_qty = 0;
-        } else if (students[index_group[i]].sum_mark / students[index_group[i]].capacity == *max_mark) {
-            *group_max_mark_qty += 1;
-            group_max_mark[*group_max_mark_qty] = index_group[i];
+    for (int i = 0; i < (*index_qty); ++i) {
+        List *l2 = l[index_group[i]];
+        while (l[index_group[i]]) {
+            if (l[index_group[i]]->students.sum_mark / l[index_group[i]]->students.capacity > *max_mark) {
+                *max_mark = l[index_group[i]]->students.sum_mark / l[index_group[i]]->students.capacity;
+                strcpy(group_max_mark, l[index_group[i]]->students.group);
+            }
+            l[index_group[i]] = l[index_group[i]]->next;
         }
+        l[index_group[i]] = l2;
     }
 }
 
-void remove_student(char *file, char *surname, char *initials, StudentStatistics *students, int *group_max_mark, double *max_mark, int *group_max_mark_qty, int *students_qty, int *index_group)
+void remove_student(char *file, char *surname, char *initials, List **l, char *group_max_mark, double *max_mark, int *index_qty, int *index_group)
 {
     FILE *in = fopen(file, "r");
         if (!in) {
@@ -114,26 +138,38 @@ void remove_student(char *file, char *surname, char *initials, StudentStatistics
         } else {
             int j = -1;
             if (!strcmp(student.gender, "F")) {
-                int j = hash_find_group(student.group, students);
-                students[j].sum_mark = 0.0;
-                students[j].capacity = 0;
-                strcpy(students[j].group, " ");
+                int j = hash(student.group);
+                int add_pos = hash_find_group(student.group, l);
 
-            }
-            *max_mark = -1;
-            *group_max_mark_qty = 0;
-            for (int i = 0; i < (*students_qty); ++i) {
-                if (index_group[i] == j) {
-                    index_group[i] = index_group[--(*students_qty)];
+                for (int i = 0; i < (*index_qty); ++i) {
+                    if (index_group[i] == j) {
+                        index_group[i] = index_group[(*index_qty)--];
+                    }
                 }
-                if (students[index_group[i]].sum_mark / students[index_group[i]].capacity > *max_mark) {
-                    *max_mark = students[index_group[i]].sum_mark / students[index_group[i]].capacity;
-                    group_max_mark[*group_max_mark_qty] = index_group[i];
-                    *group_max_mark_qty = 0;
-                } else if (students[index_group[i]].sum_mark / students[index_group[i]].capacity == *max_mark) {
-                    *group_max_mark_qty += 1;
-                    group_max_mark[*group_max_mark_qty] = index_group[i];
+                List *l1 = l[j];
+                for (int i = 0; i < add_pos; ++i) {
+                    l[j] = l[j]->next;
                 }
+                l[j]->students.sum_mark -= avg_mark(&student);
+                l[j]->students.capacity--;
+                if (!strcmp(group_max_mark, student.group)) {
+                    *max_mark = -1;
+                    for (int i = 0; i < (*index_qty); ++i) {
+                        List *l2 = l[index_group[i]];
+                        while (l[index_group[i]]) {
+                            if (l[index_group[i]]->students.sum_mark / l[index_group[i]]->students.capacity > *max_mark) {
+                                *max_mark = l[index_group[i]]->students.sum_mark / l[index_group[i]]->students.capacity;
+                                strcpy(group_max_mark, l[index_group[i]]->students.group);
+                            }
+                            l[index_group[i]] = l[index_group[i]]->next;
+                        }
+                        l[index_group[i]] = l2;
+                    }
+                } else if (l[j]->students.sum_mark / l[j]->students.capacity > *max_mark) {
+                        *max_mark = l[j]->students.sum_mark / l[j]->students.capacity;
+                        strcpy(group_max_mark, l[j]->students.group);
+                    }
+                l[j] = l1;
             }
         }
     }
@@ -173,7 +209,7 @@ void info_student(FILE *in, char *surname, char *initials)
     }
 }
 
-void add_student(FILE *add_file, StudentStatistics *students, int *group_max_mark, double *max_mark, int *group_max_mark_qty, int *students_qty, int *index_group)
+void add_student(FILE *add_file, List **l, char *group_max_mark, double *max_mark, int *index_qty, int *index_group)
 {
     Student student;
     memset(&student, 0, sizeof(Student));
@@ -208,21 +244,28 @@ void add_student(FILE *add_file, StudentStatistics *students, int *group_max_mar
         }
     }
     student_write_bin(&student, add_file);
-    int j = -1;
+
+    int add_pos = 0;
     if (!strcmp(student.gender, "F")) {
-        if (j = hash_find_group(student.group, students) == -1) {
-            j = hash_add_group(student.group, students);
+        int j = hash(student.group);
+        if (add_pos = hash_find_group(student.group, l) == -1) {
+            List *l2 = l[j];
+            add_pos = hash_add_group(student.group, l);
+            if (add_pos == 0) {
+                index_group[(*index_qty)++] = j;
+            }
         }
-        students[j].sum_mark += avg_mark(&student);
-        students[j].capacity++;
-        index_group[++(*students_qty)] = j;
+        List *l1 = l[j];
+        for (int i = 0; i < add_pos; ++i) {
+            l[j] = l[j]->next;
+        }
+        l[j]->students.sum_mark += avg_mark(&student);
+        l[j]->students.capacity++;
+        if (l[j]->students.sum_mark / l[j]->students.capacity > *max_mark) {
+                *max_mark = l[j]->students.sum_mark / l[j]->students.capacity;
+                strcpy(group_max_mark, l[j]->students.group);
+            }
+        l[j] = l1;
+
     }
-        if (students[index_group[(*students_qty)]].sum_mark / students[index_group[(*students_qty)]].capacity > *max_mark) {
-            *max_mark = students[index_group[(*students_qty)]].sum_mark / students[index_group[(*students_qty)]].capacity;
-            group_max_mark[*group_max_mark_qty] = index_group[(*students_qty)];
-            *group_max_mark_qty = 0;
-        } else if (students[index_group[(*students_qty)]].sum_mark / students[index_group[(*students_qty)]].capacity == *max_mark) {
-            *group_max_mark_qty += 1;
-            group_max_mark[*group_max_mark_qty] = index_group[(*students_qty)];
-        }
 }
