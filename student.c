@@ -7,9 +7,10 @@
 
 int hash(char *group) {
     int a = 0;
-    int pos = 1;
+    int pos = 2;
     for(int i = 0; group[i] != '\0'; ++i) {
-        a += (int)group[i] * 1024 * pos++;
+        a += ((int)group[i] * pos * 991) ;
+        pos *= 2;
     }
     if (a < 0)
         a *= -1;
@@ -34,7 +35,6 @@ int hash_find_group(char *group, List **l)
 List *list_create()
 {
     List *l = (List *)malloc(sizeof(List));
-    // l->students = { 0.0, 0, ' ' };
     l->students.sum_mark = 0.0;
     l->students.capacity = 0;
     strcpy(l->students.group ," "); 
@@ -44,11 +44,11 @@ List *list_create()
 
 void list_destroy(List *l)
 {
-    // if (l->next) {
-    //     printf("1\n");
-    //     list_destroy(l->next);
-    // }
+    if (l->next) {
+        list_destroy(l->next);
+    }
     free(l);
+    l = NULL;
 }
 
 
@@ -57,7 +57,7 @@ int hash_add_group(char *group, List **l) {
     int j = hash(group);
     int pos = 0;
     List *l1 = l[j];
-    if (!l1) {
+    if (l1 == NULL) {
         l[j] = list_create();
         strcpy(l[j]->students.group, group);
         return pos;
@@ -67,11 +67,11 @@ int hash_add_group(char *group, List **l) {
             return pos;
         }
         l1 = l1->next;
-        pos++;
+        ++pos;
     }
     l1->next = list_create();
+    pos++;
     strcpy(l1->next->students.group, group);
-    // l[j] = l1;
     return pos;
 }
 
@@ -88,7 +88,6 @@ void group_max_avg_mark(FILE *in, List **l, char *group_max_mark, double *max_ma
 {
     Student student;
     int add_pos = 0;
-    long long int aaa = 0;
     while (student_read_bin(&student, in)) {
         if (!strcmp(student.gender, "F")) {
             int j = hash(student.group);

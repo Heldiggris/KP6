@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 
         buf[buf_pos++] = latin[LATIN_SIZE + fast_rand() % 2 - 2];
         buf[buf_pos++] = '\t';
-        for (register int j = 0; j < name_size; ++j) {
+        for (register int j = 0; j < 4; ++j) {
             buf[buf_pos++] = latin[fast_rand() % LATIN_SIZE];
         }
         buf[buf_pos++] = '\t';

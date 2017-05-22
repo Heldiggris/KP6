@@ -85,6 +85,9 @@ int main(int argc, char *argv[])
         } else {
         }
     }
+    int pos = 0;
+
+
     for (int i = 0; i < index_qty; ++i) {
         list_destroy(l[index_group[i]]);
     }
