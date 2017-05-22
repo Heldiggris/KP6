@@ -43,15 +43,17 @@ int main(int argc, char *argv[])
                 fclose(add_file);
                 break;
             }
+            add_student(add_file, l, group_max_mark, &max_mark, &index_qty, index_group);
             fclose(add_file);
         } else if (!strcmp(what_do, "remove")) {
             char surname[STR_SIZE];
-            char initials[3];
+            char initials[STR_SIZE];
             fscanf(stdin, "%s", surname);
             if (feof(stdin)) {
                 break;
             }
             fscanf(stdin, "%s", initials);
+            remove_student(argv[1], surname, initials, l, group_max_mark, &max_mark, &index_qty, index_group);
             if (feof(stdin)) {
                 break;
             }

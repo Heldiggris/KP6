@@ -135,16 +135,9 @@ void remove_student(char *file, char *surname, char *initials, List **l, char *g
         } else if (strcmp(student.initials, initials)) {
             student_write_bin(&student, tmp);
         } else {
-            int j = -1;
             if (!strcmp(student.gender, "F")) {
                 int j = hash(student.group);
                 int add_pos = hash_find_group(student.group, l);
-
-                for (int i = 0; i < (*index_qty); ++i) {
-                    if (index_group[i] == j) {
-                        index_group[i] = index_group[(*index_qty)--];
-                    }
-                }
                 List *l1 = l[j];
                 for (int i = 0; i < add_pos; ++i) {
                     l[j] = l[j]->next;
@@ -176,10 +169,10 @@ void remove_student(char *file, char *surname, char *initials, List **l, char *g
     fclose(tmp);
 
     in = fopen(file, "w");
-        if (!in) {
-            printf("I/O Error: can't open file.\n");
-            exit(1);
-        }
+    if (!in) {
+        printf("I/O Error: can't open file.\n");
+        exit(1);
+    }
     tmp = fopen("tmp", "r");
     while (student_read_bin(&student, tmp)) {
         if (strcmp(student.surname, surname) != 0) {
@@ -261,10 +254,9 @@ void add_student(FILE *add_file, List **l, char *group_max_mark, double *max_mar
         l[j]->students.sum_mark += avg_mark(&student);
         l[j]->students.capacity++;
         if (l[j]->students.sum_mark / l[j]->students.capacity > *max_mark) {
-                *max_mark = l[j]->students.sum_mark / l[j]->students.capacity;
-                strcpy(group_max_mark, l[j]->students.group);
-            }
+            *max_mark = l[j]->students.sum_mark / l[j]->students.capacity;
+            strcpy(group_max_mark, l[j]->students.group);
+        }
         l[j] = l1;
-
     }
 }

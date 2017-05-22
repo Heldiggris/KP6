@@ -34,20 +34,25 @@ typedef struct _list{
 } List;
 
 
+int hash(char *group);
 
-// int hash(char *group);
+int hash_find_group(char *group, List **l);
 
-// int hash_find_group(char *group, StudentStatistics *students);
+List *list_create();
 
-// int hash_add_group(char *group, StudentStatistics *students);
+void list_destroy(List *l);
 
-// double avg_mark(Student *s);
+int hash_add_group(char *group, List **l);
 
-// void group_max_avg_mark(FILE *in, List **l, char *group_max_mark, double *max_mark, int *index_qty, int *index_group);
-// void remove_student(char *file, char *surname, char *initials, StudentStatistics *students, int *group_max_mark, double *max_mark, int *group_max_mark_qty, int *students_qty, int *index_group);
+double avg_mark(Student *s);
 
-// void add_student(FILE *add_file, StudentStatistics *students, int *group_max_mark, double *max_mark, int *group_max_mark_qty, int *students_qty, int *index_group);
+void group_max_avg_mark(FILE *in, List **l, char *group_max_mark, double *max_mark, int *index_qty, int *index_group);
+
+void remove_student(char *file, char *surname, char *initials, List **l, char *group_max_mark, double *max_mark, int *index_qty, int *index_group);
 
 void info_student(FILE *in, char *surname, char *initials);
+
+void add_student(FILE *add_file, List **l, char *group_max_mark, double *max_mark, int *index_qty, int *index_group);
+
 
 #endif
